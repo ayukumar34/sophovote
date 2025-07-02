@@ -2,7 +2,7 @@
 
 ### Introduction
 
-A full-stack, real-time voting application for a professional business fraternity, facilitating a streamlined, real-time voting experience for Rush Week bid night, eliminating inefficiencies caused by manual and common Google Form processes.
+A full-stack voting application for a professional business fraternity, facilitating a streamlined, real-time voting experience for Rush Week bid night, eliminating inefficiencies caused by manual and common Google Form processes.
 
 ### Problem
 
