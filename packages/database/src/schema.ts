@@ -39,7 +39,19 @@ export const sessions = pgTable("sessions", {
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
+export const rooms = pgTable("rooms", {
+  id: text("id").primaryKey(),
+  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  slug: text("slug").notNull().unique(),
+  code: text("code").notNull().unique(),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
+});
+
 export const schema = {
   users: users,
   sessions: sessions,
+  rooms: rooms
 };

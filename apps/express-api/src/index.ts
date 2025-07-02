@@ -17,6 +17,7 @@ import logger from './lib/logger';
 
 // Routes
 import usersRoute from './routes/users.route';
+import roomsRoute from './routes/rooms.route';
 
 const app: Application = express();
 
@@ -37,6 +38,7 @@ app.use(pinoHttp({ logger }));
 
 // Routes
 app.use('/api/users', usersRoute);
+app.use('/api/rooms', roomsRoute);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
