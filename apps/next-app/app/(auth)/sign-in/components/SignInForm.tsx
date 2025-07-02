@@ -169,7 +169,7 @@ export function SignInForm({
           <Button type="submit" className="w-full" disabled={isLoading}>
             {isLoading ? (
               <>
-                <LoaderCircle className="animate-spin" />
+                <LoaderCircle className="h-4 w-4 animate-spin" />
                 Signing in...
               </>
             ) : (

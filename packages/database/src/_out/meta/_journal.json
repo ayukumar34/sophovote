@@ -22,6 +22,13 @@
       "when": 1751318009363,
       "tag": "0002_overrated_bloodstrike",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1751498879299,
+      "tag": "0003_aspiring_white_tiger",
+      "breakpoints": true
     }
   ]
 }

@@ -43,6 +43,7 @@ export const rooms = pgTable("rooms", {
   id: text("id").primaryKey(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   name: text("name").notNull(),
+  description: text("description"),
   slug: text("slug").notNull().unique(),
   code: text("code").notNull().unique(),
   isActive: boolean("is_active").notNull().default(true),

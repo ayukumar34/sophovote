@@ -6,6 +6,7 @@ import { randomUUID } from 'crypto';
 
 // Database
 import { db, schema, Room } from '@repo/database';
+import { eq } from 'drizzle-orm';
 
 // Utilities
 import { asyncHandler } from '../utils/async-handler';
@@ -13,6 +14,7 @@ import { asyncHandler } from '../utils/async-handler';
 // Types
 interface CreateRoomRequest {
   name: string;
+  description?: string;
 }
 
 // Helper function to generate room code
@@ -36,9 +38,51 @@ const generateSlug = (name: string): string => {
     .replace(/-+/g, '-');
 };
 
+// Get all rooms for a user
+export const getRooms = asyncHandler(async (req: Request, res: Response) => {
+  // Get user
+  const user = (req as any).user;
+
+  if (!user || !user.id) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized'
+    });
+  }
+
+  try {
+    // Get all rooms for the user
+    const rooms: Room[] = await db
+      .select()
+      .from(schema.rooms)
+      .where(eq(schema.rooms.userId, user.id));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        rooms: rooms.map(room => ({
+          id: room.id,
+          name: room.name,
+          description: room.description,
+          slug: room.slug,
+          code: room.code,
+          isActive: room.isActive,
+          createdAt: room.createdAt,
+          updatedAt: room.updatedAt
+        }))
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error'
+    });
+  }
+});
+
 // Create a new room
 export const createRoom = asyncHandler(async (req: Request, res: Response) => {
-  const { name }: CreateRoomRequest = req.body;
+  const { name, description }: CreateRoomRequest = req.body;
 
   // Get user
   const user = (req as any).user;
@@ -73,6 +117,7 @@ export const createRoom = asyncHandler(async (req: Request, res: Response) => {
     id: id,
     userId: user.id,
     name: name,
+    description: description,
     slug: slug,
     code: code,
     isActive: false,
@@ -93,6 +138,7 @@ export const createRoom = asyncHandler(async (req: Request, res: Response) => {
       room: {
         id: room.id,
         name: room.name,
+        description: room.description,
         slug: room.slug,
         code: room.code,
         isActive: room.isActive,
