@@ -68,7 +68,7 @@ export function RoomDialog({
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Create Room</DialogTitle>
-          <DialogDescription>Create a new room for participants to votee</DialogDescription>
+          <DialogDescription>Create a new room for participants to vote</DialogDescription>
         </DialogHeader>
 
         <div className="px-4">
