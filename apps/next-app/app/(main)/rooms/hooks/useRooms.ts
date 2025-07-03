@@ -34,7 +34,14 @@ const getRooms = async (): Promise<Room[]> => {
     throw new Error('Failed to fetch rooms');
   }
 
-  return data.data.rooms;
+  // Sort rooms
+  const sortedRooms = data.data.rooms.sort((a, b) => {
+    const dateA = new Date(a.createdAt).getTime();
+    const dateB = new Date(b.createdAt).getTime();
+    return dateB - dateA;
+  });
+
+  return sortedRooms;
 };
 
 const createRoom = async ({ name, description }: { name: string; description?: string }): Promise<Room> => {
@@ -52,6 +59,26 @@ const createRoom = async ({ name, description }: { name: string; description?: s
 
   if (!data?.success) {
     throw new Error('Failed to create room');
+  }
+
+  return data.data.room;
+};
+
+const refreshRoomCode = async (roomId: string): Promise<Room> => {
+  const {
+    data,
+    error
+  } = await api.patch<{
+    success: boolean;
+    data: { room: Room }
+  }>(`/api/rooms/${roomId}/refresh-code`);
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data?.success) {
+    throw new Error('Failed to refresh code');
   }
 
   return data.data.room;
@@ -92,6 +119,13 @@ export function useRooms() {
     },
   });
 
+  const refreshRoomCodeMutation = useMutation({
+    mutationFn: (roomId: string) => refreshRoomCode(roomId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+    },
+  });
+
   const deleteRoomMutation = useMutation({
     mutationFn: (roomId: string) => deleteRoom(roomId),
     onSuccess: () => {
@@ -102,6 +136,7 @@ export function useRooms() {
   return {
     ...roomsQuery,
     createRoom: createRoomMutation,
+    refreshRoomCode: refreshRoomCodeMutation,
     deleteRoom: deleteRoomMutation,
   };
 }

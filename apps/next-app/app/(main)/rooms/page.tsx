@@ -28,7 +28,12 @@ export default function RoomsPage() {
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
 
   // Get rooms
-  const { data: rooms, createRoom, deleteRoom } = useRooms()
+  const {
+    data: rooms,
+    createRoom,
+    deleteRoom,
+    refreshRoomCode
+  } = useRooms()
 
   // Handle create room
   const handleCreateRoom = async (data: RoomFormValues) => {
@@ -62,6 +67,7 @@ export default function RoomsPage() {
                 key={room.id}
                 room={room}
                 deleteRoom={deleteRoom}
+                refreshRoomCode={refreshRoomCode}
               />
             ))}
           </div>

@@ -114,6 +114,12 @@ export const api = {
     options?: Omit<FetchOptions, 'method' | 'data'>,
   ) => apiRequest<T>(endpoint, { ...options, data, method: 'PUT' }),
 
+  patch: <T>(
+    endpoint: string,
+    data?: any,
+    options?: Omit<FetchOptions, 'method' | 'data'>,
+  ) => apiRequest<T>(endpoint, { ...options, data, method: 'PATCH' }),
+
   delete: <T>(
     endpoint: string,
     options?: Omit<FetchOptions, 'method'>,

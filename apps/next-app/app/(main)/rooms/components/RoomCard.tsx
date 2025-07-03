@@ -3,7 +3,7 @@
 import React from 'react';
 
 // React Hooks
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 // UI Components
 import {
@@ -26,6 +26,11 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 
 // Tanstack React Query
 import { UseMutationResult } from '@tanstack/react-query';
@@ -47,14 +52,51 @@ import {
 interface RoomCardProps {
   room: Room;
   deleteRoom: UseMutationResult<void, Error, string, unknown>;
+  refreshRoomCode: UseMutationResult<Room, Error, string, unknown>;
 }
 
-export function RoomCard({ room, deleteRoom }: RoomCardProps) {
-  // Set state
-  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
+export function RoomCard({ room, deleteRoom, refreshRoomCode }: RoomCardProps) {
+  // Set alert dialog state
   const [alertDialogInput, setAlertDialogInput] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [isAlertDialogOpen, setIsAlertDialogOpen] = useState(false);
+  const [isAlertDialogLoading, setIsAlertDialogLoading] = useState(false);
 
+  // Set refresh room code state
+  const [animatedCode, setAnimatedCode] = useState('');
+  const [isRefreshRoomCodeLoading, setIsRefreshRoomCodeLoading] = useState(false);
+
+  // Helper to format room ode
+  const formatCode = (code: string) => code.match(/.{1,2}/g)?.join(' ') || code;
+
+  // Helper to generate random character
+  const generateRandomChar = () => {
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    return characters[Math.floor(Math.random() * characters.length)];
+  };
+
+  // Helper to generate random room code
+  const generateRandomCode = () => {
+    return room.code.replace(/[A-Z0-9]/g, generateRandomChar);
+  };
+
+  useEffect(() => {
+    if (!isRefreshRoomCodeLoading) {
+      setAnimatedCode(room.code);
+      return;
+    }
+
+    // Set animated code
+    setAnimatedCode(room.code);
+
+    // Set interval to generate random code
+    const interval = setInterval(() => {
+      setAnimatedCode(generateRandomCode());
+    }, 100);
+
+    return () => clearInterval(interval);
+  }, [isRefreshRoomCodeLoading, room.code]);
+
+  // Helper to format date
   const formatDate = (date: Date | string) => {
     try {
       const dateObj = typeof date === 'string' ? new Date(date) : date;
@@ -71,22 +113,28 @@ export function RoomCard({ room, deleteRoom }: RoomCardProps) {
     }
   };
 
-  const formatCode = (code: string) => code.match(/.{1,2}/g)?.join(' ') || code;
-
   // Helper to handle alert dialog action
   const handleAlertDialogAction = async () => {
     if (alertDialogInput === room.name) {
-      setIsLoading(true);
+      setIsAlertDialogLoading(true);
       await deleteRoom.mutateAsync(room.id);
       setIsAlertDialogOpen(false);
       setAlertDialogInput('');
-      setIsLoading(false);
+      setIsAlertDialogLoading(false);
     }
   };
 
+  // Helper to handle alert dialog cancel
   const handleAlertDialogCancel = () => {
     setIsAlertDialogOpen(false);
     setAlertDialogInput('');
+  };
+
+  // Helper to handle refresh room code
+  const handleRefreshRoomCode = async () => {
+    setIsRefreshRoomCodeLoading(true);
+    await refreshRoomCode.mutateAsync(room.id);
+    setIsRefreshRoomCodeLoading(false);
   };
 
   const isDeleteEnabled = alertDialogInput === room.name;
@@ -111,7 +159,7 @@ export function RoomCard({ room, deleteRoom }: RoomCardProps) {
               <span>Room Code</span>
             </div>
             <div className="text-xl font-mono tracking-widest text-foreground">
-              {formatCode(room.code)}
+              {formatCode(animatedCode)}
             </div>
           </div>
 
@@ -123,6 +171,7 @@ export function RoomCard({ room, deleteRoom }: RoomCardProps) {
               <div>
                 <p className="text-xs text-muted-foreground">Participants</p>
                 <p className="text-sm text-foreground">
+                  {/* TODO: Get participants */}
                   0 participants
                 </p>
               </div>
@@ -156,21 +205,41 @@ export function RoomCard({ room, deleteRoom }: RoomCardProps) {
 
         <CardFooter className="flex items-center justify-between">
           <div className="flex items-center space-x-1.5">
-            <Button
-              variant="outline"
-              size="icon"
-              className="text-destructive hover:text-destructive/80"
-              onClick={() => setIsAlertDialogOpen(true)}
-            >
-              <Trash2Icon className="w-4 h-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  className="text-destructive hover:text-destructive/80"
+                  onClick={() => setIsAlertDialogOpen(true)}
+                >
+                  <Trash2Icon className="w-4 h-4" />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Delete room</p>
+              </TooltipContent>
+            </Tooltip>
 
-            <Button
-              variant="outline"
-              size="icon"
-            >
-              <RefreshCcwIcon className="w-4 h-4" />
-            </Button>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleRefreshRoomCode()}
+                  disabled={isRefreshRoomCodeLoading}
+                >
+                  {isRefreshRoomCodeLoading ? (
+                    <Loader2Icon className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <RefreshCcwIcon className="w-4 h-4" />
+                  )}
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Refresh room code</p>
+              </TooltipContent>
+            </Tooltip>
           </div>
 
           <Button
@@ -204,15 +273,15 @@ export function RoomCard({ room, deleteRoom }: RoomCardProps) {
           <AlertDialogFooter>
             <AlertDialogCancel
               onClick={handleAlertDialogCancel}
-              disabled={isLoading}
+              disabled={isAlertDialogLoading}
             >
               Cancel
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleAlertDialogAction}
-              disabled={!isDeleteEnabled || isLoading}
+              disabled={!isDeleteEnabled || isAlertDialogLoading}
             >
-              {isLoading ? (
+              {isAlertDialogLoading ? (
                 <>
                   <Loader2Icon className="w-4 h-4 animate-spin" />
                   Deleting room...

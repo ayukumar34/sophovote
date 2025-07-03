@@ -6,6 +6,7 @@ import {
   createRoom,
   getRooms,
   deleteRoom,
+  refreshRoomCode,
 } from '../controllers/rooms.controller';
 
 // Middleware
@@ -16,6 +17,7 @@ const router: Router = Router();
 // Protected routes
 router.get('/', authenticateUser, getRooms);
 router.post('/', authenticateUser, createRoom);
+router.patch('/:id/refresh-code', authenticateUser, refreshRoomCode);
 router.delete('/:id', authenticateUser, deleteRoom);
 
 export default router;

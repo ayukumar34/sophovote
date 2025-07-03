@@ -149,6 +149,90 @@ export const createRoom = asyncHandler(async (req: Request, res: Response) => {
   });
 });
 
+// Refresh room code
+export const refreshRoomCode = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  // Get user
+  const user = (req as any).user;
+
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      message: 'Bad Request'
+    });
+  }
+
+  if (!user || !user.id) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized'
+    });
+  }
+
+  try {
+    // Get room
+    const [existingRoom]: Room[] = await db
+      .select()
+      .from(schema.rooms)
+      .where(and(
+        eq(schema.rooms.id, id),
+        eq(schema.rooms.userId, user.id)
+      ));
+
+    if (!existingRoom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Not Found'
+      });
+    }
+
+    // Generate code
+    const newCode = generateRoomCode();
+
+    // Update room
+    const [updatedRoom]: Room[] = await db
+      .update(schema.rooms)
+      .set({
+        code: newCode,
+        updatedAt: new Date()
+      })
+      .where(and(
+        eq(schema.rooms.id, id),
+        eq(schema.rooms.userId, user.id)
+      ))
+      .returning();
+
+    if (!updatedRoom) {
+      return res.status(500).json({
+        success: false,
+        message: 'Internal Server Error'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        room: {
+          id: updatedRoom.id,
+          name: updatedRoom.name,
+          description: updatedRoom.description,
+          slug: updatedRoom.slug,
+          code: updatedRoom.code,
+          isActive: updatedRoom.isActive,
+          createdAt: updatedRoom.createdAt,
+          updatedAt: updatedRoom.updatedAt
+        }
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error'
+    });
+  }
+});
+
 // Delete a room by ID
 export const deleteRoom = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
