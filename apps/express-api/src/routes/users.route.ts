@@ -2,7 +2,12 @@
 import { Router } from 'express';
 
 // Controllers
-import { signUp, signIn, signOut, getCurrentUser } from '../controllers/users.controller';
+import {
+  signUp,
+  signIn,
+  signOut,
+  getCurrentUser,
+} from '../controllers/users.controller';
 
 // Middleware
 import { authenticateUser } from '../middleware/users.middleware';

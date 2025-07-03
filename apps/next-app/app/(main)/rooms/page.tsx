@@ -20,12 +20,15 @@ import { RoomDialog } from "./components/RoomDialog";
 // `RoomForm` Component
 import { type RoomFormValues } from "./components/RoomForm";
 
+// `RoomCard` Component
+import { RoomCard } from "./components/RoomCard";
+
 export default function RoomsPage() {
   // Set state
   const [isDialogOpen, setIsDialogOpen] = React.useState(false)
 
   // Get rooms
-  const { data: rooms, createRoom } = useRooms()
+  const { data: rooms, createRoom, deleteRoom } = useRooms()
 
   // Handle create room
   const handleCreateRoom = async (data: RoomFormValues) => {
@@ -53,12 +56,15 @@ export default function RoomsPage() {
         </nav>
 
         <main>
-          {rooms?.map((room) => (
-            <div key={room.id}>
-              <h2>{room.name}</h2>
-              <p>{room.description}</p>
-            </div>
-          ))}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            {rooms?.map((room) => (
+              <RoomCard
+                key={room.id}
+                room={room}
+                deleteRoom={deleteRoom}
+              />
+            ))}
+          </div>
         </main>
 
         <RoomDialog

@@ -57,6 +57,26 @@ const createRoom = async ({ name, description }: { name: string; description?: s
   return data.data.room;
 };
 
+const deleteRoom = async (roomId: string): Promise<void> => {
+  const {
+    data,
+    error
+  } = await api.delete<{
+    success: boolean;
+    data: {
+      room: Room
+    }
+  }>(`/api/rooms/${roomId}`);
+
+  if (error) {
+    throw error;
+  }
+
+  if (!data?.success) {
+    throw new Error('Failed to delete room');
+  }
+};
+
 export function useRooms() {
   const queryClient = useQueryClient();
 
@@ -72,8 +92,16 @@ export function useRooms() {
     },
   });
 
+  const deleteRoomMutation = useMutation({
+    mutationFn: (roomId: string) => deleteRoom(roomId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['rooms'] });
+    },
+  });
+
   return {
     ...roomsQuery,
     createRoom: createRoomMutation,
+    deleteRoom: deleteRoomMutation,
   };
 }

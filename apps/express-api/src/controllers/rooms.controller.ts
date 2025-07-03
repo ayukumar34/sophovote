@@ -6,7 +6,7 @@ import { randomUUID } from 'crypto';
 
 // Database
 import { db, schema, Room } from '@repo/database';
-import { eq } from 'drizzle-orm';
+import { eq, and } from 'drizzle-orm';
 
 // Utilities
 import { asyncHandler } from '../utils/async-handler';
@@ -147,4 +147,73 @@ export const createRoom = asyncHandler(async (req: Request, res: Response) => {
       }
     }
   });
+});
+
+// Delete a room by ID
+export const deleteRoom = asyncHandler(async (req: Request, res: Response) => {
+  const { id } = req.params;
+
+  // Get user
+  const user = (req as any).user;
+
+  if (!id) {
+    return res.status(400).json({
+      success: false,
+      message: 'Bad Request'
+    });
+  }
+
+  if (!user || !user.id) {
+    return res.status(401).json({
+      success: false,
+      message: 'Unauthorized'
+    });
+  }
+
+  try {
+    // Get room
+    const [existingRoom]: Room[] = await db
+      .select()
+      .from(schema.rooms)
+      .where(and(
+        eq(schema.rooms.id, id),
+        eq(schema.rooms.userId, user.id)
+      ));
+
+    if (!existingRoom) {
+      return res.status(404).json({
+        success: false,
+        message: 'Not Found'
+      });
+    }
+
+    // Delete room
+    await db
+      .delete(schema.rooms)
+      .where(and(
+        eq(schema.rooms.id, id),
+        eq(schema.rooms.userId, user.id)
+      ));
+
+    res.status(200).json({
+      success: true,
+      data: {
+        room: {
+          id: existingRoom.id,
+          name: existingRoom.name,
+          description: existingRoom.description,
+          slug: existingRoom.slug,
+          code: existingRoom.code,
+          isActive: existingRoom.isActive,
+          createdAt: existingRoom.createdAt,
+          updatedAt: existingRoom.updatedAt
+        }
+      }
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Internal Server Error'
+    });
+  }
 });
