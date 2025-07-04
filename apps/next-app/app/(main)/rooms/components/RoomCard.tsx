@@ -153,7 +153,7 @@ export function RoomCard({ room, deleteRoom, refreshRoomCode }: RoomCardProps) {
           )}
         </CardHeader>
 
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-6 px-6">
           <div className="bg-muted/50 border border-dashed border-muted-foreground/20 rounded-xl p-4 text-center space-y-2">
             <div className="flex items-center justify-center space-x-2 text-muted-foreground text-sm">
               <span>Room Code</span>

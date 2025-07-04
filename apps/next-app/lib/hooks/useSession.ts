@@ -25,11 +25,12 @@ export function useSession(): Session & {
     error: null
   });
 
+
   const fetchSession = async () => {
     try {
       setSession(prev => ({ ...prev, loading: true, error: null }));
 
-      const { data, error } = await api.get<User>('/api/users/me');
+      const { data, error } = await api.get('/api/users/me');
 
       if (error || !data) {
         setSession({
@@ -39,7 +40,7 @@ export function useSession(): Session & {
         });
       } else {
         setSession({
-          user: data,
+          user: (data as any).data.user,
           loading: false,
           error: null
         });

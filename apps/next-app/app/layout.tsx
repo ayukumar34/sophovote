@@ -35,7 +35,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-card`}
+        className={`${geistSans.variable} ${geistMono.variable} antialiased bg-card/75`}
       >
         <ThemeProvider
           attribute="class"
